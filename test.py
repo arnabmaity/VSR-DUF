@@ -10,6 +10,7 @@ from PIL import Image
 
 from utils import LoadImage, DownSample, AVG_PSNR, depth_to_space_3D, DynFilter3D, LoadParams
 from nets import FR_16L, FR_28L, FR_52L
+from tqdm import tqdm
 
 parser = argparse.ArgumentParser()
 parser.add_argument('R', metavar='R', type=int, help='Upscaling factor: One of 2, 3, 4')
@@ -106,7 +107,8 @@ with tf.Session(config=config) as sess:
         # Test using GT videos
         avg_psnrs = []
         dir_inputs = glob.glob('./inputs/G/*')
-        for v in dir_inputs:
+        dir_inputs.sort()
+        for v in tqdm(dir_inputs):
             scene_name = v.split('/')[-1]
             os.mkdir('./results/{}L/G/{}/'.format(args.L, scene_name))
             
@@ -114,7 +116,7 @@ with tf.Session(config=config) as sess:
             dir_frames.sort()
 
             frames = []
-            for f in dir_frames:
+            for f in tqdm(dir_frames,desc=scene_name):
                 frames.append(LoadImage(f))
             frames = np.asarray(frames)
             frames_padded = np.lib.pad(frames, pad_width=((T_in//2,T_in//2),(0,0),(0,0),(0,0)), mode='constant')
@@ -129,7 +131,7 @@ with tf.Session(config=config) as sess:
                 frames_padded = np.lib.pad(frames_padded, pad_width=((0,0),(2*R,2*R),(2*R,2*R),(0,0)), mode='reflect')
             
             out_Hs = []
-            for i in range(frames.shape[0]):
+            for i in tqdm(range(frames.shape[0])):
                 print('Scene {}: Frame {}/{} processing'.format(scene_name, i+1, frames.shape[0]))
                 in_H = frames_padded[i:i+T_in]  # select T_in frames
                 in_H = in_H[np.newaxis,:,:,:,:]
@@ -154,20 +156,20 @@ with tf.Session(config=config) as sess:
     elif args.T == 'L':
         # Test using Low-resolution videos
         dir_inputs = glob.glob('./inputs/L/*')
-        for v in dir_inputs:
+        dir_inputs.sort()
+        for v in tqdm(dir_inputs):
             scene_name = v.split('/')[-1]
             os.mkdir('./results/{}L/L/{}/'.format(args.L, scene_name))
             
             dir_frames = glob.glob(v + '/*.png')
             dir_frames.sort()
-
             frames = []
-            for f in dir_frames:
+            for f in tqdm(dir_frames,desc=scene_name):
                 frames.append(LoadImage(f))
             frames = np.asarray(frames)
             frames_padded = np.lib.pad(frames, pad_width=((T_in//2,T_in//2),(0,0),(0,0),(0,0)), mode='constant')
             
-            for i in range(frames.shape[0]):
+            for i in tqdm(range(frames.shape[0])):
                 print('Scene {}: Frame {}/{} processing'.format(scene_name, i+1, frames.shape[0]))
                 in_L = frames_padded[i:i+T_in]  # select T_in frames
                 in_L = in_L[np.newaxis,:,:,:,:]
