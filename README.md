@@ -23,8 +23,6 @@ For example, `python test.py 4 16 G` super-resolve input frames in `./inputs/G/*
 
 This code was tested under Python 2.7 and TensorFlow 1.3.0.
 
-## video
-[![supplementary video](./supple/title.png)](./supple/VSR_supple_crf28.mp4?raw=true)
 
 ## bibtex
 ```
